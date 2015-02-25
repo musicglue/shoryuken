@@ -4,11 +4,11 @@ require 'shoryuken/manager'
 
 describe Shoryuken::Processor do
   let(:manager)   { double Shoryuken::Manager, processor_done: nil }
-  let(:sqs_queue) { double Aws::SQS::Queue, visibility_timeout: 30 }
+  let(:sqs_queue) { double Shoryuken::Queue, visibility_timeout: 30 }
   let(:queue)     { 'default' }
 
   let(:sqs_msg) do
-    double Aws::SQS::Message,
+    double Shoryuken::Message,
       queue_url: queue,
       body: 'test',
       message_attributes: {},
@@ -207,7 +207,7 @@ describe Shoryuken::Processor do
 
     context 'when shoryuken_class header' do
       let(:sqs_msg) do
-        double Aws::SQS::Message,
+        double Shoryuken::Message,
           queue_url: queue,
           body: 'test',
           message_attributes: {
@@ -249,7 +249,7 @@ describe Shoryuken::Processor do
           'test'
         end
 
-        expect(sqs_msg).to receive(:visibility_timeout=).with(visibility_timeout).once
+        expect(sqs_msg).to receive(:change_visibility).with(visibility_timeout: visibility_timeout).once
         expect(manager).to receive(:processor_done).with(queue, subject)
 
         allow(sqs_msg).to receive(:body).and_return('test')
@@ -260,7 +260,7 @@ describe Shoryuken::Processor do
 
     context 'when the worker takes a short time' do
       it 'does not extend the message invisibility' do
-        expect(sqs_msg).to receive(:visibility_timeout=).never
+        expect(sqs_msg).to receive(:change_visibility).never
         expect(manager).to receive(:processor_done).with(queue, subject)
 
         allow(sqs_msg).to receive(:body).and_return('test')
@@ -271,7 +271,7 @@ describe Shoryuken::Processor do
 
     context 'when the worker fails' do
       it 'does not extend the message invisibility' do
-        expect(sqs_msg).to receive(:visibility_timeout=).never
+        expect(sqs_msg).to receive(:change_visibility).never
         expect_any_instance_of(TestWorker).to receive(:perform).and_raise 'worker failed'
         expect { subject.process(queue, sqs_msg) }.to raise_error
       end

@@ -22,7 +22,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "pry-byebug"
 
-  spec.add_dependency "aws-sdk-core", "2.0.21"
-  spec.add_dependency "aws-sdk-resources", "2.0.21.pre"
+  spec.add_dependency "aws-sdk", "~> 2"
   spec.add_dependency "celluloid", "~> 0.16.0"
 end
